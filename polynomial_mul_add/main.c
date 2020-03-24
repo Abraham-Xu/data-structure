@@ -112,10 +112,7 @@ List Mul(List L1, int n, List L2, int m) {
         return NULL;
     }
 
-    List L = (List)malloc(sizeof(struct Term));
-    L->Coef = 0;
-    L->Index = 0;
-    L->Next = NULL;
+    List L = CreatEmptyList();
 
     PtrToNode P1 = L1->Next;
     PtrToNode P2 = L2->Next;
