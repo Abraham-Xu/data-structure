@@ -22,23 +22,30 @@ int main() {
     int n = 0;
     scanf("%d", &n);
     List L1 = CreateList(n);
-
-    PrintList(L1);
     
     int m = 0;
     scanf("%d", &m);
     List L2 = CreateList(m);
 
-    PrintList(L2);
-
     List LMul;
     List LAdd;
 
     LMul = Mul(L1, n, L2, m);
-    PrintList(LMul);
-
     LAdd = Add(L1, n, L2, m);
+    
+    PrintList(LMul);
+    printf("\n");
     PrintList(LAdd);
+
+    free(L1);
+    free(L2);
+    free(LMul);
+    free(LAdd);
+
+    L1 = NULL;
+    L2 = NULL;
+    LMul = NULL;
+    LAdd = NULL;
 
     return 0;
 }
@@ -90,6 +97,11 @@ List Insert(List L, PtrToNode P) {
         return L;
     } else {
         Cursor2->Coef += P->Coef;
+        if (Cursor2->Coef == 0) {
+            Cursor1->Next = Cursor2->Next;
+            Cursor2->Next = NULL;
+            free(Cursor2);
+        }
     }
 
     return L;
@@ -114,7 +126,12 @@ List Mul(List L1, int n, List L2, int m) {
             P0->Coef = P1->Coef * P2->Coef;
             P0->Index = P1->Index + P2->Index;
             P0->Next = NULL;
-            Insert(L, P0);
+
+            if (P0->Coef == 0) {
+                free(P0);
+            } else {
+                Insert(L, P0);
+            }
 
             P2 = P2->Next;
         }
@@ -137,7 +154,6 @@ List Add(List L1, int n, List L2, int m) {
     L2->Next = NULL;
 
     List L = CreatEmptyList();
-    PtrToNode Cursor = L;
 
     while (Cursor1 != NULL || Cursor2 != NULL) {
         int Op = 0;
@@ -177,7 +193,11 @@ List Add(List L1, int n, List L2, int m) {
             default:break;
         }
 
-        Insert(L, P0);
+        if(P0->Coef == 0) {
+            free(P0);
+        } else {
+            Insert(L, P0);
+        } 
     }
 
     return L;
@@ -189,13 +209,18 @@ int PrintList(List L) {
         return -1;
     }
 
-    PtrToNode Cursor = L->Next;
-    while(Cursor != NULL) {
-        printf("%d %d ", Cursor->Coef, Cursor->Index);
-        Cursor = Cursor->Next;
+    if (L->Next == NULL) {
+        printf("0 0");
+        return 0;
     }
 
-    printf("\n");
+    PtrToNode Cursor = L->Next;
+    while(Cursor != NULL) {
+        printf("%d %d", Cursor->Coef, Cursor->Index);
+        Cursor = Cursor->Next;
+        if(Cursor != NULL)
+            printf(" ");
+    }
 
     return 0;
 }
