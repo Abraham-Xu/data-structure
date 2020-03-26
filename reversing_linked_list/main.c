@@ -9,6 +9,7 @@ struct NodeInfo {
 };
 struct NodeInfo ZeroNodeInfo = {0, 0, 0};
 
+typedef struct SNode *List;
 typedef struct SNode *Stack;
 struct SNode {
     struct NodeInfo Info;
@@ -16,6 +17,11 @@ struct SNode {
 };
 
 struct NodeInfo FindNode(pNodeInfo L, int Length, int Addr);
+
+List CreatEmptyList();
+int PrintList(List L);
+struct SNode* Insert(struct SNode *Target, struct NodeInfo Info);
+
 int IsEmpty(Stack S);
 Stack CreateStack();
 int Push(Stack S, struct NodeInfo Info);
@@ -27,43 +33,49 @@ int main() {
     int HEAD, N, K;
     fscanf(fp, "%d %d %d", &HEAD, &N, &K);
     
-    pNodeInfo List = (pNodeInfo)malloc(sizeof(struct NodeInfo) * N);
+    pNodeInfo Array = (pNodeInfo)malloc(sizeof(struct NodeInfo) * N);
 
     for(int i = 0; i < N; i++) {
-        fscanf(fp, "%d %d %d", &(List[i].Addr), &(List[i].Data), &(List[i].Next));
+        fscanf(fp, "%d %d %d", &(Array[i].Addr), &(Array[i].Data), &(Array[i].Next));
     }
 
     fclose(fp);
 
+    List L = CreatEmptyList();
+    int Addr = HEAD;
+    struct SNode *Tail = L;
+    while (Addr != -1) {
+        struct NodeInfo TempNodeInfo;
+        TempNodeInfo = FindNode(Array, N, Addr);
+        Tail = Insert(Tail, TempNodeInfo);
+        Addr = TempNodeInfo.Next;
+    }
+
     Stack S = CreateStack();
 
-    int Addr = HEAD;
-    for(int i = 0; i < K; i++) {
+    struct SNode *Cursor = L->Next;
+    for (int i = 0; i < K; i++) {
         struct NodeInfo TempNodeInfo;
-        TempNodeInfo = FindNode(List, N, Addr);
+        TempNodeInfo = Cursor->Info;
+        L->Next = Cursor->Next;
         Push(S, TempNodeInfo);
-        Addr = TempNodeInfo.Next;
+        free(Cursor);
+        Cursor = L->Next;
     }
 
-    struct NodeInfo TempNodeInfo;
-    struct NodeInfo LastTempNodeInfo;
+    struct SNode *Target = L;
     for (int i = 0; i < K; i++) {       
-        TempNodeInfo = Pop(S);
-        if (i != 0) {
-            LastTempNodeInfo.Next = TempNodeInfo.Addr;
-            printf("%05d %d %05d\n", LastTempNodeInfo.Addr, LastTempNodeInfo.Data, LastTempNodeInfo.Next);
-        }
-        LastTempNodeInfo = TempNodeInfo;
+        struct NodeInfo TempNodeInfo = Pop(S);    
+        Target = Insert(Target, TempNodeInfo);
     }
 
-    LastTempNodeInfo.Next = Addr;
-    printf("%05d %d %05d\n", LastTempNodeInfo.Addr, LastTempNodeInfo.Data, LastTempNodeInfo.Next);
-
-    for (int i = 0; i < N - K; i++) {
-        TempNodeInfo = FindNode(List, N, Addr);
-        printf("%05d %d %05d\n", TempNodeInfo.Addr, TempNodeInfo.Data, TempNodeInfo.Next);
-        Addr = TempNodeInfo.Next;
+    Cursor = L;
+    while (Cursor->Next != NULL) {
+        Cursor->Info.Next = Cursor->Next->Info.Addr;
+        Cursor = Cursor->Next;
     }
+
+    PrintList(L);
 
     return 0;
 }
@@ -104,4 +116,42 @@ struct NodeInfo Pop(Stack S) {
 
 int IsEmpty(Stack S) {
     return S->Next == NULL;
+}
+
+List CreatEmptyList() {
+    List L = (List)malloc(sizeof(struct SNode));
+    L->Info = ZeroNodeInfo;
+    L->Next = NULL;
+
+    return L;
+}
+
+struct SNode* Insert(struct SNode *Target, struct NodeInfo Info) {   
+    struct SNode *NewNode = (struct SNode *)malloc(sizeof(struct SNode));
+    NewNode->Info = Info;
+    NewNode->Next = Target->Next;
+    Target->Next = NewNode;
+
+    return NewNode;
+}
+
+int PrintList(List L) {
+    if (L == NULL) {
+        printf("Non-Existed List");
+        return -1;
+    }
+
+    if (L->Next == NULL) {
+        printf("Empty List!");
+        return 0;
+    }
+
+    struct SNode* Cursor = L->Next;
+    while(Cursor->Next != NULL) {
+        printf("%05d %d %05d\n", Cursor->Info.Addr, Cursor->Info.Data, Cursor->Info.Next);
+        Cursor = Cursor->Next;
+    }
+    printf("%05d %d -1", Cursor->Info.Addr, Cursor->Info.Data);
+
+    return 0;
 }
