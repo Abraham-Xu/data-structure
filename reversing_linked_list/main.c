@@ -16,7 +16,7 @@ struct SNode {
     struct SNode *Next;
 };
 
-struct NodeInfo FindNode(pNodeInfo L, int Length, int Addr);
+int FindNode(struct SNode *Target, int Addr);
 
 List CreatEmptyList();
 int PrintList(List L);
@@ -32,23 +32,23 @@ int main() {
     fp = fopen("input.txt", "r");
     int HEAD, N, K;
     fscanf(fp, "%d %d %d", &HEAD, &N, &K);
-    
-    pNodeInfo Array = (pNodeInfo)malloc(sizeof(struct NodeInfo) * N);
 
+    List L = CreatEmptyList();
+    struct SNode *Tail = L;
     for(int i = 0; i < N; i++) {
-        fscanf(fp, "%d %d %d", &(Array[i].Addr), &(Array[i].Data), &(Array[i].Next));
+        struct NodeInfo TempNodeInfo;
+        fscanf(fp, "%d %d %d", &(TempNodeInfo.Addr), &(TempNodeInfo.Data), &(TempNodeInfo.Next));
+        Tail = Insert(Tail, TempNodeInfo);
     }
 
     fclose(fp);
-
-    List L = CreatEmptyList();
+    
     int Addr = HEAD;
-    struct SNode *Tail = L;
+    struct SNode *Target = L;
     while (Addr != -1) {
-        struct NodeInfo TempNodeInfo;
-        TempNodeInfo = FindNode(Array, N, Addr);
-        Tail = Insert(Tail, TempNodeInfo);
-        Addr = TempNodeInfo.Next;
+        FindNode(Target, Addr);
+        Addr = Target->Next->Info.Next;
+        Target = Target->Next;
     }
 
     Stack S = CreateStack();
@@ -63,7 +63,7 @@ int main() {
         Cursor = L->Next;
     }
 
-    struct SNode *Target = L;
+    Target = L;
     for (int i = 0; i < K; i++) {       
         struct NodeInfo TempNodeInfo = Pop(S);    
         Target = Insert(Target, TempNodeInfo);
@@ -80,12 +80,25 @@ int main() {
     return 0;
 }
 
-struct NodeInfo FindNode(pNodeInfo L, int Length, int Addr) {
-    int i = 0;
-    while (i < Length && L[i].Addr != Addr) {
-        i++;
+int FindNode(struct SNode *Target, int Addr) {
+    if (Target == NULL)
+        return -1;
+
+    struct SNode *Cursor1 = Target;
+    struct SNode *Cursor2 = Target->Next;
+    while (Cursor2 != NULL && Cursor2->Info.Addr != Addr) {
+        Cursor1 = Cursor1->Next;
+        Cursor2 = Cursor2->Next;
     }
-    return L[i];
+
+    if (Cursor2 == NULL)
+        return -2;
+
+    Cursor1->Next = Cursor2->Next;
+    Cursor2->Next = Target->Next;
+    Target->Next = Cursor2;
+
+    return 0;
 }
 
 Stack CreateStack(){
