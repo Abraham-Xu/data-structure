@@ -45,28 +45,36 @@ int main() {
     
     int Addr = HEAD;
     struct SNode *Target = L;
+    int ListLen = 0;
     while (Addr != -1) {
         FindNode(Target, Addr);
         Addr = Target->Next->Info.Next;
         Target = Target->Next;
+        ListLen++;
     }
+    Target->Next = NULL;
+
+    int FlipNum = ListLen / K;
 
     Stack S = CreateStack();
 
     struct SNode *Cursor = L->Next;
-    for (int i = 0; i < K; i++) {
-        struct NodeInfo TempNodeInfo;
-        TempNodeInfo = Cursor->Info;
-        L->Next = Cursor->Next;
-        Push(S, TempNodeInfo);
-        free(Cursor);
-        Cursor = L->Next;
-    }
-
     Target = L;
-    for (int i = 0; i < K; i++) {       
-        struct NodeInfo TempNodeInfo = Pop(S);    
-        Target = Insert(Target, TempNodeInfo);
+    for (int j = 0; j < FlipNum; j++) {
+        for (int i = 0; i < K; i++) {
+            struct NodeInfo TempNodeInfo;
+            TempNodeInfo = Cursor->Info;
+            Target->Next = Cursor->Next;
+            Push(S, TempNodeInfo);
+            free(Cursor);
+            Cursor = Target->Next;
+        }
+
+        for (int i = 0; i < K; i++) {       
+            struct NodeInfo TempNodeInfo = Pop(S);    
+            Target = Insert(Target, TempNodeInfo);
+        }
+        Cursor = Target->Next;
     }
 
     Cursor = L;
