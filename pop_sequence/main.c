@@ -40,18 +40,18 @@ int main() {
 
         for (int j = 0; j < N; j++) {
             if (a[i][j] > Top) {
-                for (int k = Top + 1; k < a[i][j]; k++) {
+                for (int k = Top + 1; k <= a[i][j]; k++) {
                     if (Push(S, k) == -1) {
                         Flag = 1;
                         break;
                     }
                 }
                 Top = a[i][j];
-            } else {
-                if (Pop(S) != a[i][j]) {
-                    Flag = 1;
-                    break;
-                }
+            }
+
+            if (Pop(S) != a[i][j]) {
+                Flag = 1;
+                break;
             }
             
             if (Flag == 1)
