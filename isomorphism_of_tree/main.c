@@ -20,7 +20,6 @@ struct ListTree*  ReadTree(FILE *fp, int N);
 Tree InsertTree(struct ListTree *ListTree, int i);
 int FindRoot(struct ListTree *LT, int N);
 int IsomorphismCheck(Tree T1, Tree T2);
-int EqualTreeNodes(struct TNode *T1, struct TNode *T2);
 
 int main() {
     FILE *fp;
@@ -28,20 +27,25 @@ int main() {
     int N;
 
     fscanf(fp, "%d\n", &N);
+    //scanf("%d\n", &N);
     struct ListTree *LT1 = ReadTree(fp, N);
-    Tree T1 = InsertTree(LT1, FindRoot(LT1, N));
+
+    //struct ListTree *LT1 = ReadTree(N);
+    Tree T1 = N == 0 ? NULL : InsertTree(LT1, FindRoot(LT1, N));
 
     fscanf(fp, "%d\n", &N);
+    //scanf("%d\n", &N);
     struct ListTree *LT2 = ReadTree(fp, N);
-    Tree T2 = InsertTree(LT2, FindRoot(LT2, N));
+    //struct ListTree *LT2 = ReadTree(N);
+    Tree T2 = N == 0 ? NULL : InsertTree(LT2, FindRoot(LT2, N));
 
-    fclose(fp);
+    //fclose(fp);
 
     int result = IsomorphismCheck(T1, T2);
     if (result)
-        printf("YES\n");
+        printf("Yes");
     else
-        printf("NO\n");    
+        printf("No");    
 
     free(LT1);
     free(LT2);
@@ -62,7 +66,8 @@ struct ListTree* ReadTree(FILE *fp, int N) {
     char Right[2];
     
     for (int i = 0; i < N; i++) {
-        fscanf(fp, "%c %s %s\n", &Data, Left, Right);
+        fscanf(fp, "%c %s %s\n", &Data, &Left, Right);
+        //scanf("%c %s %s\n", &Data, Left, Right);
         LT[i].Data = Data;
         LT[i].Left = strcmp(Left, "-") ? atoi(Left) : -1;
         LT[i].Right = strcmp(Right, "-") ? atoi(Right) : -1;
@@ -94,7 +99,7 @@ int FindRoot(struct ListTree *LT, int N) {
     }
     
     int i = 0;
-    while (NumMap[i] != 0) {
+    while (NumMap[i] == 1) {
         i++;
     }
 
@@ -111,26 +116,11 @@ int IsomorphismCheck(Tree T1, Tree T2) {
     if (T1->Data != T2->Data)
         return 0;
 
-    if (EqualTreeNodes(T1->Left, T2->Right) && EqualTreeNodes(T1->Right, T2->Left)) { // symmetric nodes: swap two sons
-        struct TNode *Temp;
-        Temp = T2->Left;
-        T2->Left = T2->Right;
-        T2->Right = Temp;
-    } else if (!(EqualTreeNodes(T1->Left, T2->Left) && EqualTreeNodes(T1->Right, T2->Right))) { // same nodes
-        return 0;
+    if (IsomorphismCheck(T1->Left, T2->Right) && IsomorphismCheck(T1->Right, T2->Left)) { // symmetric nodes
+        return 1;
+    } else if (IsomorphismCheck(T1->Left, T2->Left) && IsomorphismCheck(T1->Right, T2->Right)) { // same nodes
+        return 1;
     }
 
-    return IsomorphismCheck(T1->Left, T2->Left) && IsomorphismCheck(T1->Right, T2->Right);
-}
-
-int EqualTreeNodes(struct TNode *T1, struct TNode *T2) {
-    if (T1 == NULL && T2 == NULL) // both NULL
-        return 1;
-    else if (T1 == NULL || T2 == NULL) // either NULL
-        return 0;
-
-    if (T1->Data == T2->Data)
-        return 1;
-    else
-        return 0;
+    return 0;
 }
