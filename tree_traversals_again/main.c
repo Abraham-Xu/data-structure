@@ -2,20 +2,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct SNode *Stack;
-struct SNode {
-    int Data;
-    int Size;
-    int MaxSize;
-    struct SNode *Next;
+int First = 1;
+
+typedef struct TNode *Tree;
+struct TNode {
+    char Data;
+    struct TNode *Left;
+    struct TNode *Right;
+    struct TNode *Father;
+    int Traversed;
 };
 
-int IsEmpty(Stack S);
-int IsFull(Stack S);
-Stack CreateStack(int MaxSize);
-int DestroyStack(Stack S);
-int Push(Stack S, int Data);
-int Pop(Stack S);
+int IsEmpty(Tree T);
+Tree InsertNode(int Data, Tree Father);
+void PostOrderTraversal(Tree T);
 
 int main() {
     FILE *fp;
@@ -23,7 +23,7 @@ int main() {
 
     int N = 0;
     fscanf(fp, "%d\n", &N);
-    int (*Op)[2] = malloc(sizeof(int) * 2 * (2 * N + 1));
+    int (*Op)[2] = malloc(sizeof(int) * 2 * (2 * N));
 
     char Operation[10];
     char Node[10];
@@ -42,78 +42,64 @@ int main() {
 
     fclose(fp);
 
-    Stack S = CreateStack(N);
-    int SavePop = 0;
-    for (int i = 0; i < 2 * N; i++) {
+    if(N == 0) return 0;
+
+    Tree T = InsertNode(Op[0][1], NULL);
+    Tree CurNode = T;
+
+    for (int i = 1; i < 2 * N; i++) {
         if (Op[i][0] == 1) {
-            Push(S, Op[i][1]);
-        } else if (Op[i][0] == -1) {
-            if (SavePop == 1) {
-                printf("%d ", Pop(S));
-                SavePop = 0;
-            }
-            if (Op[i + 1][0] != 1) {
-                printf("%d ", Pop(S));
+            if (CurNode->Left == NULL) {
+                CurNode->Left = InsertNode(Op[i][1], CurNode);
+                CurNode = CurNode->Left;
             } else {
-                SavePop = 1;
+                CurNode->Right = InsertNode(Op[i][1], CurNode);
+                CurNode = CurNode->Right;
+            }
+        } else if (Op[i][0] == -1) {
+            if (CurNode->Traversed == 0) {
+                CurNode->Traversed = 1;
+            } else {
+                if (CurNode->Father->Traversed == 0) {
+                    CurNode = CurNode->Father;
+                    CurNode->Traversed = 1;
+                } else {
+                    CurNode = CurNode->Father->Father;
+                }
             }
         }
     }
 
-    DestroyStack(S);
+    PostOrderTraversal(T);
     
     return 0;
 }
 
-Stack CreateStack(int MaxSize){
-    Stack S = (Stack)malloc(sizeof(struct SNode));
-    S->Next = NULL;
-    S->Size = 0;
-    S->MaxSize = MaxSize;
-    return S;
+int IsEmpty(Tree T) {
+    return T == NULL;
 }
 
-int DestroyStack(Stack S){
-    struct SNode *Cursor = S;
-    while (Cursor != NULL) {
-        Cursor = Cursor->Next;
-        free(Cursor);
-        Cursor = NULL;
-    }
+Tree InsertNode(int Data, Tree Father) {
+    Tree T = (Tree)malloc(sizeof(struct TNode));
+    
+    T->Data = Data;
+    
+    T->Left = NULL;
+    T->Right = NULL;
+    T->Father = Father;
+    T->Traversed = 0;
 
-    return 0;
+    return T;
 }
 
-int Push(Stack S, int Data){
-    if (IsFull(S)) {
-        return -1;
-    } else { 
-        struct SNode *NewSNode = (struct SNode*)malloc(sizeof(struct SNode));
-        NewSNode->Data = Data;
-        NewSNode->Next = S->Next;
-        S->Next = NewSNode;
-        S->Size++;
-        return 0;
-    }
-}
-
-int Pop(Stack S) {
-    if (IsEmpty(S)) {
-        return -1;
-    } else {
-        struct SNode *Top = S->Next;
-        S->Next = Top->Next;
-        int Data = Top->Data;
-        free(Top);
-        S->Size--;
-        return Data;
-    }
-}
-
-int IsEmpty(Stack S) {
-    return S->Next == NULL;
-}
-
-int IsFull(Stack S) {
-    return S->Size == S->MaxSize;
+void PostOrderTraversal(Tree T) {
+    if (T == NULL)
+        return;
+    
+    PostOrderTraversal(T->Left);
+    PostOrderTraversal(T->Right);
+    if (!First) 
+        printf(" ");
+    printf("%d", T->Data);
+    First = 0;
 }
