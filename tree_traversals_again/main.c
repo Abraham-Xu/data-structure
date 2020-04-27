@@ -16,6 +16,7 @@ struct TNode {
 int IsEmpty(Tree T);
 Tree InsertNode(int Data, Tree Father);
 void PostOrderTraversal(Tree T);
+Tree PopNode(Tree CurNode);
 
 int main() {
     FILE *fp;
@@ -57,16 +58,7 @@ int main() {
                 CurNode = CurNode->Right;
             }
         } else if (Op[i][0] == -1) {
-            if (CurNode->Traversed == 0) {
-                CurNode->Traversed = 1;
-            } else {
-                if (CurNode->Father->Traversed == 0) {
-                    CurNode = CurNode->Father;
-                    CurNode->Traversed = 1;
-                } else {
-                    CurNode = CurNode->Father->Father;
-                }
-            }
+            CurNode = PopNode(CurNode);
         }
     }
 
@@ -102,4 +94,15 @@ void PostOrderTraversal(Tree T) {
         printf(" ");
     printf("%d", T->Data);
     First = 0;
+}
+
+Tree PopNode(Tree CurNode){
+    if (CurNode->Traversed == 0) {
+        CurNode->Traversed = 1;
+    } else {
+        CurNode = CurNode->Father;
+        CurNode = PopNode(CurNode);
+    }
+
+    return CurNode;
 }
