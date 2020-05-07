@@ -26,7 +26,7 @@ int UpdateHeight(Tree T);
 
 int main() {
     FILE *fp;
-    fp = fopen("input2.txt", "r");
+    fp = fopen("input1.txt", "r");
 
     int N = 0;
     fscanf(fp, "%d ", &N);
@@ -77,12 +77,12 @@ Tree InsertNode(int Data, Tree T) {
     T->BalanceFactor = GetHeight(T->Left) - GetHeight(T->Right);
 
     if (T->BalanceFactor > 1) {
-        if (T->Left->BalanceFactor > 0)
+        if (Data < T->Left->Data)
             T = LLRotate(T);
         else
             T = LRRotate(T);    
     } else if (T->BalanceFactor < -1) {
-        if (T->Right->BalanceFactor > 0)
+        if (Data < T->Right->Data)
             T = RLRotate(T);
         else
             T = RRRotate(T); 
@@ -123,9 +123,10 @@ Tree LLRotate(Tree T) {
 Tree LRRotate(Tree T) {
     Tree NewRoot = T->Left->Right;
     T->Left->Right = NewRoot->Left;
+    Tree Temp = T->Left;
     T->Left = NewRoot->Right;
 
-    NewRoot->Left = T->Left;
+    NewRoot->Left = Temp;
     NewRoot->Right = T;
 
     UpdateHeight(NewRoot);
